@@ -2,7 +2,35 @@
 # 1 "PID.c"
 typedef enum {false, true} bool;
 
+# 30 "C:\Program Files (x86)\Microchip\xc8\v1.37\include\math.h"
+extern double fabs(double);
+extern double floor(double);
+extern double ceil(double);
+extern double modf(double, double *);
+extern double sqrt(double);
+extern double atof(const char *);
+extern double sin(double) ;
+extern double cos(double) ;
+extern double tan(double) ;
+extern double asin(double) ;
+extern double acos(double) ;
+extern double atan(double);
+extern double atan2(double, double) ;
+extern double log(double);
+extern double log10(double);
+extern double pow(double, double) ;
+extern double exp(double) ;
+extern double sinh(double) ;
+extern double cosh(double) ;
+extern double tanh(double);
+extern double eval_poly(double, const double *, int);
+extern double frexp(double, int *);
+extern double ldexp(double, int);
+extern double fmod(double, double);
+extern double trunc(double);
+extern double round(double);
 
+# 4 "PID.c"
 double Kp = 1;
 double Ki = 1;
 double Kd = 1;
@@ -22,8 +50,8 @@ const int epochLength = 200;
 const double errorThreshold = 0.005;
 const double learnRate = 0.01;
 
-void updateError(double error){
-Ierror_abs = ((error) < 0 ? -(error) : (error));
+void updateEpochError(double error){
+Ierror_abs = abs(error);
 cumulativeError += (error * error);
 }
 
@@ -36,4 +64,30 @@ void evaluatePID(){
 if(!needsTraining) return;
 currentError = sqrt(cumulativeError / epochLength);
 needsTraining = (currentError > errorThreshold);
+}
+
+void adjust(double * Kx, double dx, double dE){
+double partialDKx = *(Kx) * dx * dE * learnRate;
+*(Kx) -= partialDKx;
+}
+
+void backpropagation(){
+double deltaError = previousError - currentError;
+previousError = currentError;
+
+adjust(&Kp, Perror, deltaError);
+adjust(&Ki, Ierror_abs, deltaError);
+adjust(&Kd, Derror, deltaError);
+}
+
+void updateError(double err){
+Derror = err - Perror;
+Perror = err;
+Ierror += err;
+
+updateEpochError(err);
+}
+
+double calcPID(){
+return (Kp * Perror + Kd * Derror + Ki * Ierror);
 }

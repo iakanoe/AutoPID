@@ -2,9 +2,37 @@ Version 3.2 HI-TECH Software Intermediate Code
 "14 PID.c
 [c E1 0 1 .. ]
 [n E1 . false true  ]
-"35
-[v _sqrt `(i ~T0 @X0 0 ef ]
+"24
+[v _abs `(i ~T0 @X0 0 ef ]
+"34 C:\Program Files (x86)\Microchip\xc8\v1.37\include\math.h
+[v _sqrt `(d ~T0 @X0 0 ef1`d ]
 [; ;PID.c: 1: typedef enum {false, true} bool;
+[; ;math.h: 30: extern double fabs(double);
+[; ;math.h: 31: extern double floor(double);
+[; ;math.h: 32: extern double ceil(double);
+[; ;math.h: 33: extern double modf(double, double *);
+[; ;math.h: 34: extern double sqrt(double);
+[; ;math.h: 35: extern double atof(const char *);
+[; ;math.h: 36: extern double sin(double) ;
+[; ;math.h: 37: extern double cos(double) ;
+[; ;math.h: 38: extern double tan(double) ;
+[; ;math.h: 39: extern double asin(double) ;
+[; ;math.h: 40: extern double acos(double) ;
+[; ;math.h: 41: extern double atan(double);
+[; ;math.h: 42: extern double atan2(double, double) ;
+[; ;math.h: 43: extern double log(double);
+[; ;math.h: 44: extern double log10(double);
+[; ;math.h: 45: extern double pow(double, double) ;
+[; ;math.h: 46: extern double exp(double) ;
+[; ;math.h: 47: extern double sinh(double) ;
+[; ;math.h: 48: extern double cosh(double) ;
+[; ;math.h: 49: extern double tanh(double);
+[; ;math.h: 50: extern double eval_poly(double, const double *, int);
+[; ;math.h: 51: extern double frexp(double, int *);
+[; ;math.h: 52: extern double ldexp(double, int);
+[; ;math.h: 53: extern double fmod(double, double);
+[; ;math.h: 54: extern double trunc(double);
+[; ;math.h: 55: extern double round(double);
 "4 PID.c
 [v _Kp `d ~T0 @X0 1 e ]
 [i _Kp
@@ -96,15 +124,15 @@ Version 3.2 HI-TECH Software Intermediate Code
 ]
 [; ;PID.c: 21: const double learnRate = 0.01;
 "23
-[v _updateError `(v ~T0 @X0 1 ef1`d ]
+[v _updateEpochError `(v ~T0 @X0 1 ef1`d ]
 {
-[; ;PID.c: 23: void updateError(double error){
-[e :U _updateError ]
+[; ;PID.c: 23: void updateEpochError(double error){
+[e :U _updateEpochError ]
 [v _error `d ~T0 @X0 1 r1 ]
 [f ]
-[; ;PID.c: 24: Ierror_abs = ((error) < 0 ? -(error) : (error));
+[; ;PID.c: 24: Ierror_abs = abs(error);
 "24
-[e = _Ierror_abs ? < _error -> -> 0 `i `d : -U _error _error ]
+[e = _Ierror_abs -> ( _abs _error `d ]
 [; ;PID.c: 25: cumulativeError += (error * error);
 "25
 [e =+ _cumulativeError * _error _error ]
@@ -141,11 +169,94 @@ Version 3.2 HI-TECH Software Intermediate Code
 [e :U 4 ]
 [; ;PID.c: 35: currentError = sqrt(cumulativeError / epochLength);
 "35
-[e = _currentError -> ( _sqrt / _cumulativeError -> _epochLength `d `d ]
+[e = _currentError ( _sqrt (1 / _cumulativeError -> _epochLength `d ]
 [; ;PID.c: 36: needsTraining = (currentError > errorThreshold);
 "36
 [e = _needsTraining -> -> > _currentError _errorThreshold `i `E1 ]
 [; ;PID.c: 37: }
 "37
 [e :UE 3 ]
+}
+"39
+[v _adjust `(v ~T0 @X0 1 ef3`*d`d`d ]
+{
+[; ;PID.c: 39: void adjust(double * Kx, double dx, double dE){
+[e :U _adjust ]
+[v _Kx `*d ~T0 @X0 1 r1 ]
+[v _dx `d ~T0 @X0 1 r2 ]
+[v _dE `d ~T0 @X0 1 r3 ]
+[f ]
+"40
+[v _partialDKx `d ~T0 @X0 1 a ]
+[; ;PID.c: 40: double partialDKx = *(Kx) * dx * dE * learnRate;
+[e = _partialDKx * * * *U _Kx _dx _dE _learnRate ]
+[; ;PID.c: 41: *(Kx) -= partialDKx;
+"41
+[e =- *U _Kx _partialDKx ]
+[; ;PID.c: 42: }
+"42
+[e :UE 5 ]
+}
+"44
+[v _backpropagation `(v ~T0 @X0 1 ef ]
+{
+[; ;PID.c: 44: void backpropagation(){
+[e :U _backpropagation ]
+[f ]
+"45
+[v _deltaError `d ~T0 @X0 1 a ]
+[; ;PID.c: 45: double deltaError = previousError - currentError;
+[e = _deltaError - _previousError _currentError ]
+[; ;PID.c: 46: previousError = currentError;
+"46
+[e = _previousError _currentError ]
+[; ;PID.c: 48: adjust(&Kp, Perror, deltaError);
+"48
+[e ( _adjust (3 , , &U _Kp _Perror _deltaError ]
+[; ;PID.c: 49: adjust(&Ki, Ierror_abs, deltaError);
+"49
+[e ( _adjust (3 , , &U _Ki _Ierror_abs _deltaError ]
+[; ;PID.c: 50: adjust(&Kd, Derror, deltaError);
+"50
+[e ( _adjust (3 , , &U _Kd _Derror _deltaError ]
+[; ;PID.c: 51: }
+"51
+[e :UE 6 ]
+}
+"53
+[v _updateError `(v ~T0 @X0 1 ef1`d ]
+{
+[; ;PID.c: 53: void updateError(double err){
+[e :U _updateError ]
+[v _err `d ~T0 @X0 1 r1 ]
+[f ]
+[; ;PID.c: 54: Derror = err - Perror;
+"54
+[e = _Derror - _err _Perror ]
+[; ;PID.c: 55: Perror = err;
+"55
+[e = _Perror _err ]
+[; ;PID.c: 56: Ierror += err;
+"56
+[e =+ _Ierror _err ]
+[; ;PID.c: 58: updateEpochError(err);
+"58
+[e ( _updateEpochError (1 _err ]
+[; ;PID.c: 59: }
+"59
+[e :UE 7 ]
+}
+"61
+[v _calcPID `(d ~T0 @X0 1 ef ]
+{
+[; ;PID.c: 61: double calcPID(){
+[e :U _calcPID ]
+[f ]
+[; ;PID.c: 62: return (Kp * Perror + Kd * Derror + Ki * Ierror);
+"62
+[e ) + + * _Kp _Perror * _Kd _Derror * _Ki _Ierror ]
+[e $UE 8  ]
+[; ;PID.c: 63: }
+"63
+[e :UE 8 ]
 }

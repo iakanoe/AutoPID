@@ -1,5 +1,5 @@
 typedef enum {false, true} bool;
-#define abs(x) ((x) < 0 ? -(x) : (x))
+#include <math.h> //#define abs(x) ((x) < 0 ? -(x) : (x))
 
 double Kp = 1;
 double Ki = 1;
@@ -20,7 +20,7 @@ const int epochLength = 200;
 const double errorThreshold = 0.005;
 const double learnRate = 0.01;
 
-void updateError(double error){
+void updateEpochError(double error){
     Ierror_abs = abs(error);
     cumulativeError += (error * error);
 }
@@ -32,6 +32,32 @@ void resetError(){
 
 void evaluatePID(){
     if(!needsTraining) return;
-        currentError = sqrt(cumulativeError / epochLength);
-        needsTraining = (currentError > errorThreshold);
+    currentError = sqrt(cumulativeError / epochLength);
+    needsTraining = (currentError > errorThreshold);
+}
+
+void adjust(double * Kx, double dx, double dE){
+    double partialDKx = *(Kx) * dx * dE * learnRate;
+    *(Kx) -= partialDKx;
+}
+
+void backpropagation(){
+    double deltaError = previousError - currentError;
+    previousError = currentError;
+    
+    adjust(&Kp, Perror, deltaError);
+    adjust(&Ki, Ierror_abs, deltaError);
+    adjust(&Kd, Derror, deltaError);
+}
+
+void updateError(double err){
+    Derror = err - Perror;
+    Perror = err;
+    Ierror += err;
+    
+    updateEpochError(err);
+}
+
+double calcPID(){
+    return (Kp * Perror + Kd * Derror + Ki * Ierror);
 }
