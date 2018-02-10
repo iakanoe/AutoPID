@@ -1,0 +1,151 @@
+Version 3.2 HI-TECH Software Intermediate Code
+"14 PID.c
+[c E1 0 1 .. ]
+[n E1 . false true  ]
+"35
+[v _sqrt `(i ~T0 @X0 0 ef ]
+[; ;PID.c: 1: typedef enum {false, true} bool;
+"4 PID.c
+[v _Kp `d ~T0 @X0 1 e ]
+[i _Kp
+-> -> 1 `i `d
+]
+[; ;PID.c: 4: double Kp = 1;
+"5
+[v _Ki `d ~T0 @X0 1 e ]
+[i _Ki
+-> -> 1 `i `d
+]
+[; ;PID.c: 5: double Ki = 1;
+"6
+[v _Kd `d ~T0 @X0 1 e ]
+[i _Kd
+-> -> 1 `i `d
+]
+[; ;PID.c: 6: double Kd = 1;
+"8
+[v _Perror `d ~T0 @X0 1 e ]
+[i _Perror
+-> -> 0 `i `d
+]
+[; ;PID.c: 8: double Perror = 0;
+"9
+[v _Ierror `d ~T0 @X0 1 e ]
+[i _Ierror
+-> -> 0 `i `d
+]
+[; ;PID.c: 9: double Ierror = 0;
+"10
+[v _Derror `d ~T0 @X0 1 e ]
+[i _Derror
+-> -> 0 `i `d
+]
+[; ;PID.c: 10: double Derror = 0;
+"11
+[v _Ierror_abs `d ~T0 @X0 1 e ]
+[i _Ierror_abs
+-> -> 0 `i `d
+]
+[; ;PID.c: 11: double Ierror_abs = 0;
+"13
+[v _counter `i ~T0 @X0 1 e ]
+[i _counter
+-> 0 `i
+]
+[; ;PID.c: 13: int counter = 0;
+"14
+[v _needsTraining `E1 ~T0 @X0 1 e ]
+[i _needsTraining
+. `E1 1
+]
+[; ;PID.c: 14: bool needsTraining = true;
+"15
+[v _currentError `d ~T0 @X0 1 e ]
+[i _currentError
+-> -> 0 `i `d
+]
+[; ;PID.c: 15: double currentError = 0;
+"16
+[v _previousError `d ~T0 @X0 1 e ]
+[i _previousError
+-> -> 0 `i `d
+]
+[; ;PID.c: 16: double previousError = 0;
+"17
+[v _cumulativeError `d ~T0 @X0 1 e ]
+[i _cumulativeError
+-> -> 0 `i `d
+]
+[; ;PID.c: 17: double cumulativeError = 0;
+"18
+[v _epochLength `Ci ~T0 @X0 1 e ]
+[i _epochLength
+-> 200 `i
+]
+[; ;PID.c: 18: const int epochLength = 200;
+"20
+[v _errorThreshold `Cd ~T0 @X0 1 e ]
+[i _errorThreshold
+.0.005
+]
+[; ;PID.c: 20: const double errorThreshold = 0.005;
+"21
+[v _learnRate `Cd ~T0 @X0 1 e ]
+[i _learnRate
+.0.01
+]
+[; ;PID.c: 21: const double learnRate = 0.01;
+"23
+[v _updateError `(v ~T0 @X0 1 ef1`d ]
+{
+[; ;PID.c: 23: void updateError(double error){
+[e :U _updateError ]
+[v _error `d ~T0 @X0 1 r1 ]
+[f ]
+[; ;PID.c: 24: Ierror_abs = ((error) < 0 ? -(error) : (error));
+"24
+[e = _Ierror_abs ? < _error -> -> 0 `i `d : -U _error _error ]
+[; ;PID.c: 25: cumulativeError += (error * error);
+"25
+[e =+ _cumulativeError * _error _error ]
+[; ;PID.c: 26: }
+"26
+[e :UE 1 ]
+}
+"28
+[v _resetError `(v ~T0 @X0 1 ef ]
+{
+[; ;PID.c: 28: void resetError(){
+[e :U _resetError ]
+[f ]
+[; ;PID.c: 29: Ierror_abs = 0;
+"29
+[e = _Ierror_abs -> -> 0 `i `d ]
+[; ;PID.c: 30: cumulativeError = 0;
+"30
+[e = _cumulativeError -> -> 0 `i `d ]
+[; ;PID.c: 31: }
+"31
+[e :UE 2 ]
+}
+"33
+[v _evaluatePID `(v ~T0 @X0 1 ef ]
+{
+[; ;PID.c: 33: void evaluatePID(){
+[e :U _evaluatePID ]
+[f ]
+[; ;PID.c: 34: if(!needsTraining) return;
+"34
+[e $ ! ! != -> _needsTraining `i -> -> -> 0 `i `E1 `i 4  ]
+[e $UE 3  ]
+[e :U 4 ]
+[; ;PID.c: 35: currentError = sqrt(cumulativeError / epochLength);
+"35
+[e = _currentError -> ( _sqrt / _cumulativeError -> _epochLength `d `d ]
+[; ;PID.c: 36: needsTraining = (currentError > errorThreshold);
+"36
+[e = _needsTraining -> -> > _currentError _errorThreshold `i `E1 ]
+[; ;PID.c: 37: }
+"37
+[e :UE 3 ]
+}
