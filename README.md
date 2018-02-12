@@ -8,4 +8,4 @@ Esto es una red neuronal, un PID que se ajusta a si mismo. Actua teniendo en cue
 
 En lo posible, este programa se debe instalar con un PID inicial que funcione, ya que caso contrario el robot se iría de la pista antes de poder aprender y auto-tunearse. Los pesos para el PID inicial se pueden modificar en las lineas 28 a 32 del archivo "AutoPID.h".
 
-[nn]: https://raw.githubusercontent.com/iakanoe/AutoPID.X/master/neuralnetwork.png "Representación de la red neuronal"
+[nn]: https://raw.githubusercontent.com/iakanoe/AutoPID/master/neuralnetwork.png "Representación de la red neuronal"
