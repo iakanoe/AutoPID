@@ -1,6 +1,5 @@
 
-# 1 "PID.c"
-typedef enum {false, true} bool;
+# 1 "AutoPID.c"
 
 # 30 "C:\Program Files (x86)\Microchip\xc8\v1.37\include\math.h"
 extern double fabs(double);
@@ -30,64 +29,78 @@ extern double fmod(double, double);
 extern double trunc(double);
 extern double round(double);
 
-# 4 "PID.c"
-double Kp = 1;
-double Ki = 1;
-double Kd = 1;
-
-double Perror = 0;
-double Ierror = 0;
-double Derror = 0;
-double Ierror_abs = 0;
-
-int counter = 0;
-bool needsTraining = true;
-double currentError = 0;
-double previousError = 0;
-double cumulativeError = 0;
+# 23 "AutoPID.h"
 const int epochLength = 200;
-
-const double errorThreshold = 0.005;
+const double errorThreshold = 5;
 const double learnRate = 0.01;
 
-void updateEpochError(double error){
-Ierror_abs = abs(error);
-cumulativeError += (error * error);
-}
 
-void resetError(){
-Ierror_abs = 0;
-cumulativeError = 0;
-}
 
-void evaluatePID(){
-if(!needsTraining) return;
-currentError = sqrt(cumulativeError / epochLength);
-needsTraining = (currentError > errorThreshold);
-}
+const double Kp = 1;
+const double Ki = 1;
+const double Kd = 1;
 
-void adjust(double * Kx, double dx, double dE){
-double partialDKx = *(Kx) * dx * dE * learnRate;
-*(Kx) -= partialDKx;
-}
+# 4 "AutoPID.c"
+double PID(double err){
+static double _Kp = Kp;
+static double _Ki = Ki;
+static double _Kd = Kd;
+static double Perror = 0;
+static double Ierror = 0;
+static double Derror = 0;
+static double Ierror_abs = 0;
+static char needsTraining = 1;
+static double currentError = 0;
+static double previousError = 0;
+static double cumulativeError = 0;
+static int count = 0;
 
-void backpropagation(){
-double deltaError = previousError - currentError;
-previousError = currentError;
 
-adjust(&Kp, Perror, deltaError);
-adjust(&Ki, Ierror_abs, deltaError);
-adjust(&Kd, Derror, deltaError);
-}
-
-void updateError(double err){
 Derror = err - Perror;
 Perror = err;
 Ierror += err;
+Ierror_abs += fabs(err);
+cumulativeError += (err * err);
+double steer = _Kp * Perror + _Kd * Derror + _Ki * Ierror;
 
-updateEpochError(err);
+
+count++;
+
+
+if(count == epochLength){
+count = 0;
+
+
+if(needsTraining){
+
+
+
+currentError = sqrt(cumulativeError / epochLength);
+
+# 45
+needsTraining = currentError > errorThreshold;
+
+
+
+if(needsTraining){
+
+
+double deltaError = previousError - currentError;
+previousError = currentError;
+
+
+_Kp -= _Kp * Perror * deltaError * learnRate;
+_Ki -= _Ki * Ierror_abs * deltaError * learnRate;
+_Kd -= _Kd * Derror * deltaError * learnRate;
 }
 
-double calcPID(){
-return (Kp * Perror + Kd * Derror + Ki * Ierror);
+
+Ierror_abs = 0;
+cumulativeError = 0;
+}
+}
+
+
+
+return steer;
 }

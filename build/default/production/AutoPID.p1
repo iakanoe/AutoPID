@@ -1,0 +1,231 @@
+Version 3.2 HI-TECH Software Intermediate Code
+"30 C:\Program Files (x86)\Microchip\xc8\v1.37\include\math.h
+[v _fabs `(d ~T0 @X0 0 ef1`d ]
+"34
+[v _sqrt `(d ~T0 @X0 0 ef1`d ]
+[; ;math.h: 30: extern double fabs(double);
+[; ;math.h: 31: extern double floor(double);
+[; ;math.h: 32: extern double ceil(double);
+[; ;math.h: 33: extern double modf(double, double *);
+[; ;math.h: 34: extern double sqrt(double);
+[; ;math.h: 35: extern double atof(const char *);
+[; ;math.h: 36: extern double sin(double) ;
+[; ;math.h: 37: extern double cos(double) ;
+[; ;math.h: 38: extern double tan(double) ;
+[; ;math.h: 39: extern double asin(double) ;
+[; ;math.h: 40: extern double acos(double) ;
+[; ;math.h: 41: extern double atan(double);
+[; ;math.h: 42: extern double atan2(double, double) ;
+[; ;math.h: 43: extern double log(double);
+[; ;math.h: 44: extern double log10(double);
+[; ;math.h: 45: extern double pow(double, double) ;
+[; ;math.h: 46: extern double exp(double) ;
+[; ;math.h: 47: extern double sinh(double) ;
+[; ;math.h: 48: extern double cosh(double) ;
+[; ;math.h: 49: extern double tanh(double);
+[; ;math.h: 50: extern double eval_poly(double, const double *, int);
+[; ;math.h: 51: extern double frexp(double, int *);
+[; ;math.h: 52: extern double ldexp(double, int);
+[; ;math.h: 53: extern double fmod(double, double);
+[; ;math.h: 54: extern double trunc(double);
+[; ;math.h: 55: extern double round(double);
+"23 AutoPID.h
+[v _epochLength `Ci ~T0 @X0 1 e ]
+[i _epochLength
+-> 200 `i
+]
+[; ;AutoPID.h: 23: const int epochLength = 200;
+"24
+[v _errorThreshold `Cd ~T0 @X0 1 e ]
+[i _errorThreshold
+-> -> 5 `i `d
+]
+[; ;AutoPID.h: 24: const double errorThreshold = 5;
+"25
+[v _learnRate `Cd ~T0 @X0 1 e ]
+[i _learnRate
+.0.01
+]
+[; ;AutoPID.h: 25: const double learnRate = 0.01;
+"29
+[v _Kp `Cd ~T0 @X0 1 e ]
+[i _Kp
+-> -> 1 `i `d
+]
+[; ;AutoPID.h: 29: const double Kp = 1;
+"30
+[v _Ki `Cd ~T0 @X0 1 e ]
+[i _Ki
+-> -> 1 `i `d
+]
+[; ;AutoPID.h: 30: const double Ki = 1;
+"31
+[v _Kd `Cd ~T0 @X0 1 e ]
+[i _Kd
+-> -> 1 `i `d
+]
+[; ;AutoPID.h: 31: const double Kd = 1;
+"4 AutoPID.c
+[v _PID `(d ~T0 @X0 1 ef1`d ]
+{
+[; ;AutoPID.c: 4: double PID(double err){
+[e :U _PID ]
+[v _err `d ~T0 @X0 1 r1 ]
+[f ]
+"5
+[v F69 `d ~T0 @X0 1 s _Kp ]
+[i F69
+_Kp
+]
+"6
+[v F70 `d ~T0 @X0 1 s _Ki ]
+[i F70
+_Ki
+]
+"7
+[v F71 `d ~T0 @X0 1 s _Kd ]
+[i F71
+_Kd
+]
+"8
+[v F72 `d ~T0 @X0 1 s Perror ]
+[i F72
+-> -> 0 `i `d
+]
+"9
+[v F73 `d ~T0 @X0 1 s Ierror ]
+[i F73
+-> -> 0 `i `d
+]
+"10
+[v F74 `d ~T0 @X0 1 s Derror ]
+[i F74
+-> -> 0 `i `d
+]
+"11
+[v F75 `d ~T0 @X0 1 s Ierror_abs ]
+[i F75
+-> -> 0 `i `d
+]
+"12
+[v F76 `uc ~T0 @X0 1 s needsTraining ]
+[i F76
+-> -> 1 `i `uc
+]
+"13
+[v F77 `d ~T0 @X0 1 s currentError ]
+[i F77
+-> -> 0 `i `d
+]
+"14
+[v F78 `d ~T0 @X0 1 s previousError ]
+[i F78
+-> -> 0 `i `d
+]
+"15
+[v F79 `d ~T0 @X0 1 s cumulativeError ]
+[i F79
+-> -> 0 `i `d
+]
+"16
+[v F80 `i ~T0 @X0 1 s count ]
+[i F80
+-> 0 `i
+]
+[; ;AutoPID.c: 5: static double _Kp = Kp;
+[; ;AutoPID.c: 6: static double _Ki = Ki;
+[; ;AutoPID.c: 7: static double _Kd = Kd;
+[; ;AutoPID.c: 8: static double Perror = 0;
+[; ;AutoPID.c: 9: static double Ierror = 0;
+[; ;AutoPID.c: 10: static double Derror = 0;
+[; ;AutoPID.c: 11: static double Ierror_abs = 0;
+[; ;AutoPID.c: 12: static char needsTraining = 1;
+[; ;AutoPID.c: 13: static double currentError = 0;
+[; ;AutoPID.c: 14: static double previousError = 0;
+[; ;AutoPID.c: 15: static double cumulativeError = 0;
+[; ;AutoPID.c: 16: static int count = 0;
+[; ;AutoPID.c: 19: Derror = err - Perror;
+"19
+[e = F74 - _err F72 ]
+[; ;AutoPID.c: 20: Perror = err;
+"20
+[e = F72 _err ]
+[; ;AutoPID.c: 21: Ierror += err;
+"21
+[e =+ F73 _err ]
+[; ;AutoPID.c: 22: Ierror_abs += fabs(err);
+"22
+[e =+ F75 ( _fabs (1 _err ]
+[; ;AutoPID.c: 23: cumulativeError += (err * err);
+"23
+[e =+ F79 * _err _err ]
+"24
+[v _steer `d ~T0 @X0 1 a ]
+[; ;AutoPID.c: 24: double steer = _Kp * Perror + _Kd * Derror + _Ki * Ierror;
+[e = _steer + + * F69 F72 * F71 F74 * F70 F73 ]
+[; ;AutoPID.c: 27: count++;
+"27
+[e ++ F80 -> 1 `i ]
+[; ;AutoPID.c: 30: if(count == epochLength){
+"30
+[e $ ! == F80 _epochLength 2  ]
+{
+[; ;AutoPID.c: 31: count = 0;
+"31
+[e = F80 -> 0 `i ]
+[; ;AutoPID.c: 34: if(needsTraining){
+"34
+[e $ ! != -> F76 `i -> -> -> 0 `i `uc `i 3  ]
+{
+[; ;AutoPID.c: 38: currentError = sqrt(cumulativeError / epochLength);
+"38
+[e = F77 ( _sqrt (1 / F79 -> _epochLength `d ]
+[; ;AutoPID.c: 45: needsTraining = currentError > errorThreshold;
+"45
+[e = F76 -> -> > F77 _errorThreshold `i `uc ]
+[; ;AutoPID.c: 49: if(needsTraining){
+"49
+[e $ ! != -> F76 `i -> -> -> 0 `i `uc `i 4  ]
+{
+"52
+[v _deltaError `d ~T0 @X0 1 a ]
+[; ;AutoPID.c: 52: double deltaError = previousError - currentError;
+[e = _deltaError - F78 F77 ]
+[; ;AutoPID.c: 53: previousError = currentError;
+"53
+[e = F78 F77 ]
+[; ;AutoPID.c: 56: _Kp -= _Kp * Perror * deltaError * learnRate;
+"56
+[e =- F69 * * * F69 F72 _deltaError _learnRate ]
+[; ;AutoPID.c: 57: _Ki -= _Ki * Ierror_abs * deltaError * learnRate;
+"57
+[e =- F70 * * * F70 F75 _deltaError _learnRate ]
+[; ;AutoPID.c: 58: _Kd -= _Kd * Derror * deltaError * learnRate;
+"58
+[e =- F71 * * * F71 F74 _deltaError _learnRate ]
+"59
+}
+[e :U 4 ]
+[; ;AutoPID.c: 59: }
+[; ;AutoPID.c: 62: Ierror_abs = 0;
+"62
+[e = F75 -> -> 0 `i `d ]
+[; ;AutoPID.c: 63: cumulativeError = 0;
+"63
+[e = F79 -> -> 0 `i `d ]
+"64
+}
+[e :U 3 ]
+"65
+}
+[e :U 2 ]
+[; ;AutoPID.c: 64: }
+[; ;AutoPID.c: 65: }
+[; ;AutoPID.c: 69: return steer;
+"69
+[e ) _steer ]
+[e $UE 1  ]
+[; ;AutoPID.c: 70: }
+"70
+[e :UE 1 ]
+}
