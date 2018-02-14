@@ -14,7 +14,8 @@ double PID(double err){
     static double previousError = 0;
     static double cumulativeError = 0;
     static int count = 0;
-    
+    static double learningRate = learnRate;
+
     // Calcular el PID y obtener el valor para doblar (steer)
     Derror = err - Perror;
     Perror = err;
@@ -22,48 +23,55 @@ double PID(double err){
     Ierror_abs += fabs(err);
     cumulativeError += (err * err);
     double steer = _Kp * Perror + _Kd * Derror + _Ki * Ierror;
-    
+
     // Contador de epoch
     count++;
-    
+
     // Cada epoch:
     if(count == epochLength){
         count = 0;
-        
+
         // Si hace falta seguir tuneando:
         if(needsTraining){
-            
+
             // Calcular el error del epoch, siendo el promedio de la
-            // integración de todos los errores.
+            // integraciï¿½n de todos los errores.
             currentError = sqrt(cumulativeError / epochLength);
 
-            // Evaluar si el error del epoch está dentro de un threshold.
-            // Cuando el error es menor al threshold es porque está lo
+            // Evaluar si el error del epoch estï¿½ dentro de un threshold.
+            // Cuando el error es menor al threshold es porque estï¿½ lo
             // suficientemente acercado a 0 como para seguir tuneando.
             // El threshold debe ser bajo pero no tanto, ya que si es
-            // muy bajo podría nunca llegarse a lograr un PID "óptimo".
+            // muy bajo podrï¿½a nunca llegarse a lograr un PID "ï¿½ptimo".
             needsTraining = currentError > errorThreshold;
 
-            // Si es necesario después de hacer el cálculo,
+            // NEEDS TESTING
+            // Ajusta el learning rate para que decaiga en base al error,
+            // herramienta clÃ¡sica de optimizaciÃ³n de redes neuronale;
+            // ya que al acercarse al mÃ­nimo error posible se necesita
+            // ser linealmente mÃ¡s preciso.
+            learningRate *= fabs(currentError) / 100;
+
+            // Si es necesario despuï¿½s de hacer el cï¿½lculo,
             // se hace el entrenamiento (backpropagation).
             if(needsTraining){
-                
+
                 // Calcular los errores.
                 double deltaError = previousError - currentError;
                 previousError = currentError;
 
                 // Tunear las constantes.
-                _Kp -= _Kp * Perror * deltaError * learnRate;
-                _Ki -= _Ki * Ierror_abs * deltaError * learnRate;
-                _Kd -= _Kd * Derror * deltaError * learnRate;
+                _Kp -= _Kp * Perror * deltaError * learningRate;
+                _Ki -= _Ki * Ierror_abs * deltaError * learningRate;
+                _Kd -= _Kd * Derror * deltaError * learningRate;
             }
 
-            // Resetear los contadores de errores, para el próximo epoch.
+            // Resetear los contadores de errores, para el prï¿½ximo epoch.
             Ierror_abs = 0;
             cumulativeError = 0;
         }
     }
-    
+
     // Devolver el valor de steer, para poder aplicarlo
     // a los motores o servos, dependiendo del uso.
     return steer;
